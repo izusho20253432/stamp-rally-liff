@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>スタンプラリーQR</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body>
+  <h2>スタンプを加算中...</h2>
+  <div id="result"></div>
+
+  <script>
+    const liffId = "YOUR_LIFF_ID"; // ★LINE Developersで発行したLIFF ID
+    const gasUrl = "YOUR_GAS_DEPLOY_URL"; // ★GASの公開URL
+
+    async function main() {
+      await liff.init({ liffId });
+
+      if (!liff.isLoggedIn()) {
+        liff.login();
+        return;
+      }
+
+      const profile = await liff.getProfile();
+      const userId = profile.userId;
+
+      const params = new URLSearchParams(window.location.search);
+      const shopId = params.get("shopId");
+
+      if (!shopId) {
+        document.getElementById("result").innerText = "❌ shopId が見つかりません";
+        return;
+      }
+
+      const url = `${gasUrl}?action=addStamp&userId=${userId}&shopId=${shopId}`;
+      try {
+        const res = await fetch(url);
+        await res.text();
+        document.getElementById("result").innerText = "✅ スタンプ加算完了！";
+      } catch (e) {
+        document.getElementById("result").innerText = "⚠️ エラーが発生しました";
+      }
+    }
+
+    main();
+  </script>
+</body>
+</html>
