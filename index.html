@@ -10,8 +10,8 @@
   <div id="result"></div>
 
   <script>
-    const liffId = "YOUR_LIFF_ID"; // ★LINE Developersで発行したLIFF ID
-    const gasUrl = "YOUR_GAS_DEPLOY_URL"; // ★GASの公開URL
+    const liffId = "2008140201-3BvRrDMk"; // ★LINE Developersで発行したLIFF ID
+    const gasUrl = "https://script.google.com/macros/s/AKfycbwgpUCup5Ad6Uoqa3rmLRZYDja8tLbbeoS6HqxFbqmcM92uitKwjuFRGJZNkvef_B8wdA/exec"; // ★GASの公開URL
 
     async function main() {
       await liff.init({ liffId });
@@ -32,7 +32,7 @@
         return;
       }
 
-      const url = `${gasUrl}?action=addStamp&userId=${userId}&shopId=${shopId}`;
+      const url = `${gasUrl}?mode=stamp&userId=${userId}&shopId=${shopId}`;
       try {
         const res = await fetch(url);
         await res.text();
