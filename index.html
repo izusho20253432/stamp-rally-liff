@@ -35,11 +35,14 @@
       const url = `${gasUrl}?mode=stamp&userId=${userId}&shopId=${shopId}`;
       try {
         const res = await fetch(url);
-        await res.text();
-        document.getElementById("result").innerText = "✅ スタンプ加算完了！";
+        const text = await res.text();
+        console.log("GAS response:", text);
+        document.getElementById("result").innerText = `✅ スタンプ加算完了！（レスポンス: ${text}）`;
       } catch (e) {
+        console.error(e);
         document.getElementById("result").innerText = "⚠️ エラーが発生しました";
       }
+
     }
 
     main();
