@@ -33,6 +33,7 @@
       }
 
       const url = `${gasUrl}?mode=stamp&userId=${userId}&shopId=${shopId}`;
+      console.log("Fetching:", url);  // ←追加
       try {
         const res = await fetch(url);
         const text = await res.text();
