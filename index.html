@@ -10,42 +10,51 @@
   <div id="result"></div>
 
   <script>
-    const liffId = "2008140201-3BvRrDMk"; // ★LINE Developersで発行したLIFF ID
-    const gasUrl = "https://script.google.com/macros/s/AKfycbxY5Rruk-ErtJY_u0Rk3U2WOUlXtdwzdhzZPkYu70tuO9-_Q2Ex8mbVy3Afw1kgCt9GXw/exec"; // ★GASの公開URL
+  const liffId = "YOUR_LIFF_ID";
+  const gasUrl = "YOUR_GAS_URL";
 
-    async function main() {
+  async function main() {
+    try {
       await liff.init({ liffId });
+      console.log("✅ LIFF init 完了");
+
       if (!liff.isLoggedIn()) {
+        console.log("未ログイン → ログインします");
         liff.login();
         return;
       }
-      const idToken = liff.getIDToken(); // これなら必ず取れる
 
+      console.log("✅ ログイン済み");
 
+      // ★ここでユーザー情報を取得
+      const profile = await liff.getProfile();
+      console.log("プロフィール取得:", profile);
+
+      // クエリパラメータから shopId を取得
       const params = new URLSearchParams(window.location.search);
       const shopId = params.get("shopId");
-
       if (!shopId) {
         document.getElementById("result").innerText = "❌ shopId が見つかりません";
         return;
       }
 
+      // ★GAS 呼び出し
       const url = `${gasUrl}?mode=stamp&shopId=${shopId}`;
+      console.log("呼び出しURL:", url);
 
-      console.log("Fetching:", url);  // ←追加
-      try {
-        const res = await fetch(url);
-        const text = await res.text();
-        console.log("GAS response:", text);
-        document.getElementById("result").innerText = `✅ スタンプ加算完了！（レスポンス: ${text}）`;
-      } catch (e) {
-        console.error(e);
-        document.getElementById("result").innerText = "⚠️ エラーが発生しました";
-      }
+      const res = await fetch(url);
+      const text = await res.text();
+      console.log("GAS response:", text);
 
+      document.getElementById("result").innerText = "✅ スタンプ加算完了！";
+    } catch (e) {
+      console.error("LIFF エラー:", e);
+      document.getElementById("result").innerText = "⚠️ エラー: " + e.message;
     }
+  }
 
-    main();
-  </script>
+  main();
+</script>
+
 </body>
 </html>
