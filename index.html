@@ -15,14 +15,12 @@
 
     async function main() {
       await liff.init({ liffId });
-
       if (!liff.isLoggedIn()) {
         liff.login();
         return;
       }
+      const idToken = liff.getIDToken(); // これなら必ず取れる
 
-      const profile = await liff.getProfile();
-      const userId = profile.userId;
 
       const params = new URLSearchParams(window.location.search);
       const shopId = params.get("shopId");
@@ -32,7 +30,8 @@
         return;
       }
 
-      const url = `${gasUrl}?mode=stamp&userId=${userId}&shopId=${shopId}`;
+      const url = `${gasUrl}?mode=stamp&shopId=${shopId}`;
+
       console.log("Fetching:", url);  // ←追加
       try {
         const res = await fetch(url);
