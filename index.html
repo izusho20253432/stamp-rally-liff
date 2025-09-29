@@ -10,51 +10,44 @@
   <div id="result"></div>
 
   <script>
-  const liffId = "2008140201-3BvRrDMk";
-  const gasUrl = "https://script.google.com/macros/s/AKfycbxY5Rruk-ErtJY_u0Rk3U2WOUlXtdwzdhzZPkYu70tuO9-_Q2Ex8mbVy3Afw1kgCt9GXw/exec";
+    const liffId = "2008140201-3BvRrDMk"; // ★発行された LIFF ID
+    const gasUrl = "https://script.google.com/macros/s/AKfycbxY5Rruk-ErtJY_u0Rk3U2WOUlXtdwzdhzZPkYu70tuO9-_Q2Ex8mbVy3Afw1kgCt9GXw/exec"; // ★GASのURL
 
-  async function main() {
-    try {
+    async function main() {
       await liff.init({ liffId });
-      console.log("✅ LIFF init 完了");
 
       if (!liff.isLoggedIn()) {
-        console.log("未ログイン → ログインします");
-        liff.login();
+        liff.login({ scope: ["openid", "profile"] });
         return;
       }
 
-      console.log("✅ ログイン済み");
+      // 👇ここで idToken を確認
+      const idToken = liff.getIDToken();
+      console.log("idToken:", idToken);
 
-      // ★ここでユーザー情報を取得
-      const profile = await liff.getProfile();
-      console.log("プロフィール取得:", profile);
-
-      // クエリパラメータから shopId を取得
+      // QRコードからのパラメータ
       const params = new URLSearchParams(window.location.search);
       const shopId = params.get("shopId");
+
       if (!shopId) {
         document.getElementById("result").innerText = "❌ shopId が見つかりません";
         return;
       }
 
-      // ★GAS 呼び出し
-      const url = `${gasUrl}?mode=stamp&shopId=${shopId}`;
-      console.log("呼び出しURL:", url);
-
-      const res = await fetch(url);
-      const text = await res.text();
-      console.log("GAS response:", text);
-
-      document.getElementById("result").innerText = "✅ スタンプ加算完了！";
-    } catch (e) {
-      console.error("LIFF エラー:", e);
-      document.getElementById("result").innerText = "⚠️ エラー: " + e.message;
+      // idTokenをGASに送る（verify用）
+      const url = `${gasUrl}?mode=stamp&idToken=${idToken}&shopId=${shopId}`;
+      try {
+        const res = await fetch(url);
+        const text = await res.text();
+        console.log("GAS response:", text);
+        document.getElementById("result").innerText = "✅ スタンプ加算完了！";
+      } catch (e) {
+        console.error(e);
+        document.getElementById("result").innerText = "⚠️ エラーが発生しました";
+      }
     }
-  }
 
-  main();
-</script>
-
+    main();
+  </script>
 </body>
 </html>
