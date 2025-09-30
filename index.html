@@ -36,7 +36,8 @@
       }
 
       // idTokenをGASに送る（verify用）
-      const url = `https://script.google.com/macros/s/AKfycbxxxxx/exec?mode=stamp&idToken=${idToken}&shopId=${shopId}`;
+     const url = `${gasUrl}?mode=stamp&idToken=${idToken}&shopId=${shopId}`;
+
       try {
         const res = await fetch(url);
         const text = await res.text();
