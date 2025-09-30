@@ -9,54 +9,52 @@
   <h2>スタンプを加算中...</h2>
   <div id="result"></div>
 
-  <script>
-    const liffId = "2008140201-3BvRrDMk"; // ★発行された LIFF ID
-    const gasUrl = "https://script.google.com/macros/s/AKfycbyWhaIdK9dIRs1Q12DcNwOACCAIlE6Y4hGH38DpAGuJ3maRp2w6zIRvtNOJpWgZclTdGg/exec"; // ★GASのURL
+ <script>
+  const liffId = "2008140201-3BvRrDMk"; 
+  const gasUrl = "https://script.google.com/macros/s/AKfycbyS-6p9bHMJyQCCmg6jx_w8bdPy6MkyGFdxGGASitGW9HhpyB7ogTXNdGeR2SiQvi9UUg/exec"; 
 
-    async function main() {
-      await liff.init({ liffId });
+  async function main() {
+    await liff.init({ liffId });
 
-      if (!liff.isLoggedIn()) {
-        liff.login({ scope: ["openid", "profile"] });
-        return;
+    if (!liff.isLoggedIn()) {
+      liff.login({ scope: ["openid", "profile"] });
+      return;
+    }
+
+    const idToken = liff.getIDToken();
+    console.log("idToken:", idToken);
+
+    const params = new URLSearchParams(window.location.search);
+    const shopId = params.get("shopId") || "1001";
+
+    if (!shopId) {
+      document.getElementById("result").innerText = "❌ shopId が見つかりません";
+      return;
+    }
+
+    const url = `${gasUrl}?mode=stamp&idToken=${idToken}&shopId=${shopId}`;
+
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      console.log("GAS response:", data);
+
+      if (data.status === "ok") {
+        document.getElementById("result").innerText = "✅ スタンプ加算完了！";
+      } else {
+        document.getElementById("result").innerText =
+          "⚠️ エラー: " + (data.message || "不明なエラー");
       }
-
-      // 👇ここで idToken を確認
-      const idToken = liff.getIDToken();
-      console.log("idToken:", idToken);
-
-      // QRコードからのパラメータ
-      const params = new URLSearchParams(window.location.search);
-      // const shopId = params.get("shopId");
-      const shopId = "1001"; // ← テスト用に固定
-
-      if (!shopId) {
-        document.getElementById("result").innerText = "❌ shopId が見つかりません";
-        return;
-      }
-
-      // idTokenをGASに送る（verify用）
-     const url = `${gasUrl}?mode=stamp&idToken=${idToken}&shopId=${shopId}`;
-
-     try {
-  const res = await fetch(url);
-  const data = await res.json();  // ← JSONパース
-  console.log("GAS response:", data);
-
-  if (data.status === "ok") {
-    document.getElementById("result").innerText = "✅ スタンプ加算完了！";
-  } else {
-    document.getElementById("result").innerText =
-      "⚠️ エラー: " + (data.message || "不明なエラー");
+    } catch (e) {
+      console.error(e);
+      document.getElementById("result").innerText = "⚠️ 通信エラーが発生しました";
+    }
   }
-} catch (e) {
-  console.error(e);
-  document.getElementById("result").innerText = "⚠️ 通信エラーが発生しました";
-}
 
+  // ← script の中に入れる
+  main();
+</script>
 
-    main();
-  </script>
 </body>
 </html>
 
