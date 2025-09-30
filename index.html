@@ -38,16 +38,22 @@
       // idTokenをGASに送る（verify用）
      const url = `${gasUrl}?mode=stamp&idToken=${idToken}&shopId=${shopId}`;
 
-      try {
-        const res = await fetch(url);
-        const text = await res.text();
-        console.log("GAS response:", text);
-        document.getElementById("result").innerText = "✅ スタンプ加算完了！";
-      } catch (e) {
-        console.error(e);
-        document.getElementById("result").innerText = "⚠️ エラーが発生しました";
-      }
-    }
+     try {
+  const res = await fetch(url);
+  const data = await res.json();  // ← JSONパース
+  console.log("GAS response:", data);
+
+  if (data.status === "ok") {
+    document.getElementById("result").innerText = "✅ スタンプ加算完了！";
+  } else {
+    document.getElementById("result").innerText =
+      "⚠️ エラー: " + (data.message || "不明なエラー");
+  }
+} catch (e) {
+  console.error(e);
+  document.getElementById("result").innerText = "⚠️ 通信エラーが発生しました";
+}
+
 
     main();
   </script>
