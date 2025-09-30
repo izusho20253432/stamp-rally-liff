@@ -27,7 +27,8 @@
 
       // QRコードからのパラメータ
       const params = new URLSearchParams(window.location.search);
-      const shopId = params.get("shopId");
+      // const shopId = params.get("shopId");
+      const shopId = "1001"; // ← テスト用に固定
 
       if (!shopId) {
         document.getElementById("result").innerText = "❌ shopId が見つかりません";
