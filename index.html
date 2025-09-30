@@ -10,20 +10,22 @@
   <div id="result"></div>
 
   <script>
-    const LIFF_ID = "2008140201-3BvRrDMk"; // ← LIFF ID を入れる
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxY5Rruk-ErtJY_u0Rk3U2WOUlXtdwzdhzZPkYu70tuO9-_Q2Ex8mbVy3Afw1kgCt9GXw/exec ; // ← GAS URL
+    const liffId = "2008140201-3BvRrDMk"; // ★発行された LIFF ID
+    const gasUrl = "https://script.google.com/macros/s/AKfycbxY5Rruk-ErtJY_u0Rk3U2WOUlXtdwzdhzZPkYu70tuO9-_Q2Ex8mbVy3Afw1kgCt9GXw/exec"; // ★GASのURL
 
     async function main() {
-      await liff.init({ liffId: LIFF_ID });
+      await liff.init({ liffId });
 
       if (!liff.isLoggedIn()) {
         liff.login({ scope: ["openid", "profile"] });
         return;
       }
 
+      // 👇ここで idToken を確認
       const idToken = liff.getIDToken();
+      console.log("idToken:", idToken);
 
-      // QRのURLパラメータから shopId を取得
+      // QRコードからのパラメータ
       const params = new URLSearchParams(window.location.search);
       const shopId = params.get("shopId");
 
@@ -32,15 +34,13 @@
         return;
       }
 
-      // GAS にスタンプ加算リクエスト
-      const url = `${GAS_URL}?mode=stamp&idToken=${encodeURIComponent(idToken)}&shopId=${shopId}`;
-
+      // idTokenをGASに送る（verify用）
+      const url = `${gasUrl}?mode=stamp&idToken=${encodeURIComponent(idToken)}&shopId=${shopId}`;
       try {
         const res = await fetch(url);
-        const data = await res.json();
-        console.log("GAS response:", data);
-
-        document.getElementById("result").innerText = `✅ スタンプ加算完了！\n追加数: ${data.added}`;
+        const text = await res.text();
+        console.log("GAS response:", text);
+        document.getElementById("result").innerText = "✅ スタンプ加算完了！";
       } catch (e) {
         console.error(e);
         document.getElementById("result").innerText = "⚠️ エラーが発生しました";
@@ -51,3 +51,4 @@
   </script>
 </body>
 </html>
+
