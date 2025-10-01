@@ -10,49 +10,75 @@
   <div id="result"></div>
 
  <script>
-  const liffId = "2008140201-3BvRrDMk"; 
-  const gasUrl = "https://script.google.com/macros/s/AKfycbzoYFTXDPYdw5TXCG9YUOD2K57VB9G3ujQZpQjmwwpanbkv5sUcfN1KxE7FpF-2w_MZRw/exec"; 
+  const liffId = "2008140201-3BvRrDMk"; 
+  const gasUrl = "https://script.google.com/macros/s/AKfycbzoYFTXDPYdw5TXCG9YUOD2K57VB9G3ujQZpQjmwwpanbkv5sUcfN1KxE7FpF-2w_MZRw/exec"; 
 
-  async function main() {
-    await liff.init({ liffId });
-
-    if (!liff.isLoggedIn()) {
-      liff.login({ scope: ["openid", "profile"] });
-      return;
+  async function main() {
+    // 1. URLから shopId を取得し、セッションに保存/復元を試みる
+    const initialParams = new URLSearchParams(window.location.search);
+    let shopId = initialParams.get("shopId");
+     
+    // shopId がURLに含まれていればセッションに保存
+    if (shopId) {
+        sessionStorage.setItem('tempShopId', shopId);
+        console.log("Debug: Initial shopId stored:", shopId);
+    } else {
+        // URLになければセッションから復元を試みる
+        shopId = sessionStorage.getItem('tempShopId');
+        console.log("Debug: shopId restored from session:", shopId);
     }
 
-    const idToken = liff.getIDToken();
-    console.log("idToken:", idToken);
+    await liff.init({ liffId });
 
-    const params = new URLSearchParams(window.location.search);
-    const shopId = params.get("shopId") || "1001";
+    if (!liff.isLoggedIn()) {
+      // ログイン後にリダイレクトで戻ってくる際、shopIdはセッションに保存されている
+      liff.login({ scope: ["openid", "profile"] });
+      return;
+    }
 
+    // ログイン済みの場合、セッションに shopId が残っているか再確認
     if (!shopId) {
-      document.getElementById("result").innerText = "❌ shopId が見つかりません";
-      return;
+        // shopIdが復元されていない場合、デフォルト値を使用
+        shopId = "1001"; 
     }
 
-    const url = `${gasUrl}?mode=stamp&idToken=${idToken}&shopId=${shopId}`;
+    // 最終的な shopId のチェック
+    if (!shopId || shopId === "1001") {
+        // shopId が取得できていない、またはデフォルト値のままの場合はエラーとして表示
+      document.getElementById("result").innerText = "❌ shopId が見つかりません (QRコードに shopId を設定してください)";
+        // セッションストレージをクリア
+        sessionStorage.removeItem('tempShopId');
+      return;
+    }
+    
+    // セッションストレージをクリア
+    sessionStorage.removeItem('tempShopId');
 
-    try {
-      const res = await fetch(url);
-      const data = await res.json();
-      console.log("GAS response:", data);
+    const idToken = liff.getIDToken();
+    console.log("idToken:", idToken);
 
-      if (data.status === "ok") {
-        document.getElementById("result").innerText = "✅ スタンプ加算完了！";
-      } else {
-        document.getElementById("result").innerText =
-          "⚠️ エラー: " + (data.message || "不明なエラー");
-      }
-    } catch (e) {
-      console.error(e);
-      document.getElementById("result").innerText = "⚠️ 通信エラーが発生しました";
-    }
-  }
+    // GASへのリクエストURLを構築
+    const url = `${gasUrl}?mode=stamp&idToken=${idToken}&shopId=${shopId}`;
+    console.log("Debug: Final GAS Request URL:", url); // 👈 mode=stamp が含まれているか確認
 
-  // ← script の中に入れる
-  main();
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      console.log("GAS response:", data);
+
+      if (data.status === "ok") {
+        document.getElementById("result").innerText = "✅ スタンプ加算完了！";
+      } else {
+        document.getElementById("result").innerText =
+          "⚠️ エラー: " + (data.message || "不明なエラー");
+      }
+    } catch (e) {
+      console.error(e);
+      document.getElementById("result").innerText = "⚠️ 通信エラーが発生しました";
+    }
+  }
+
+  main();
 </script>
 
 </body>
