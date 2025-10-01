@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>スタンプラリーQR</title>
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <meta charset="utf-8">
+  <title>スタンプラリーQR</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
-  <h2>スタンプを加算中...</h2>
-  <div id="result"></div>
+  <h2>スタンプを加算中...</h2>
+  <div id="result"></div>
 
- <script>
+ <script>
   const liffId = "2008140201-3BvRrDMk"; 
+  // ★ GAS URLはあなたの最新のURLに置き換えてください
   const gasUrl = "https://script.google.com/macros/s/AKfycbzoYFTXDPYdw5TXCG9YUOD2K57VB9G3ujQZpQjmwwpanbkv5sUcfN1KxE7FpF-2w_MZRw/exec"; 
 
   async function main() {
@@ -23,7 +24,7 @@
         sessionStorage.setItem('tempShopId', shopId);
         console.log("Debug: Initial shopId stored:", shopId);
     } else {
-        // URLになければセッションから復元を試みる
+        // URLになければセッションから復元を試みる (リダイレクト後はこちらが動く)
         shopId = sessionStorage.getItem('tempShopId');
         console.log("Debug: shopId restored from session:", shopId);
     }
@@ -31,9 +32,9 @@
     await liff.init({ liffId });
 
     if (!liff.isLoggedIn()) {
-      // ログイン後にリダイレクトで戻ってくる際、shopIdはセッションに保存されている
+      // ログイン処理。この後リダイレクトで戻ってくる
       liff.login({ scope: ["openid", "profile"] });
-      return;
+      return; // ★ ログイン中はここで処理を中断
     }
 
     // ログイン済みの場合、セッションに shopId が残っているか再確認
@@ -51,15 +52,15 @@
       return;
     }
     
-    // セッションストレージをクリア
+    // 処理が成功しそうなのでセッションストレージをクリア
     sessionStorage.removeItem('tempShopId');
 
     const idToken = liff.getIDToken();
     console.log("idToken:", idToken);
 
-    // GASへのリクエストURLを構築
+    // GASへのリクエストURLを構築 (mode=stampがここで確実に付与される)
     const url = `${gasUrl}?mode=stamp&idToken=${idToken}&shopId=${shopId}`;
-    console.log("Debug: Final GAS Request URL:", url); // 👈 mode=stamp が含まれているか確認
+    console.log("Debug: Final GAS Request URL:", url);
 
     try {
       const res = await fetch(url);
@@ -83,4 +84,3 @@
 
 </body>
 </html>
-
